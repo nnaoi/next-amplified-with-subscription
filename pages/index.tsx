@@ -1,7 +1,75 @@
+import { Amplify, API, graphqlOperation, withSSRContext } from "aws-amplify";
+import { GetStaticProps } from "next";
 import Head from 'next/head'
+import React, { useEffect, useState } from "react";
+import { CreateTodoMutationVariables, ListTodosQuery, OnCreateTodoSubscription } from "../src/API";
+
+import CollapsibleGroupItem, { CollapsibleGroupItemProps } from "../src/components/collapsibleGroupItem";
+import { createTodo } from "../src/graphql/mutations";
+import { listTodos } from "../src/graphql/queries";
+import { onCreateTodo } from "../src/graphql/subscriptions";
 import styles from '../styles/Home.module.css'
 
-export default function Home() {
+
+type HomeProps = {
+  data: ListTodosQuery;
+}
+
+type CreateTodoSubscriptionEvent = {
+  value: {
+    data: OnCreateTodoSubscription
+  }
+}
+
+export default function Home({ data }: HomeProps) {
+  const initialItems: CollapsibleGroupItemProps[] =
+    data.listTodos.items.map((item) => ({
+      id: item.id,
+      name: item.name,
+      description: item.description,
+    }));
+  const [
+    collpsibleGroupItems,
+    setItems
+  ] = useState<CollapsibleGroupItemProps[]>(initialItems);
+  const [input, setInput] = useState("");
+
+  const add = () => {
+    const vars: CreateTodoMutationVariables = {
+      input: {
+        name: input,
+        description: input,
+      }
+    }
+    const client = API.graphql(graphqlOperation(
+      createTodo, vars))
+    if ("then" in client) {
+      client.then(response => {
+        console.log(response);
+      });
+    }
+  }
+
+  useEffect(() => {
+    const client = API.graphql(
+      graphqlOperation(onCreateTodo)
+    )
+    if ("subscribe" in client) {
+      client.subscribe({
+        next: ({ value: { data } }: CreateTodoSubscriptionEvent) => {
+          if (data.onCreateTodo) {
+            const todo: CollapsibleGroupItemProps = {
+              id: data.onCreateTodo.id,
+              name: data.onCreateTodo.name ?? "",
+              description: data.onCreateTodo.description ?? "",
+            }
+            setItems(prev => [...prev, todo])
+          }
+        }
+      })
+    }
+  }, [])
+
   return (
     <div className={styles.container}>
       <Head>
@@ -9,57 +77,50 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
+      <div style={{ fontFamily: 'Roboto' }}>
+        <form className="m-4 flex">
+          <input 
+            className="rounded-l-lg p-4 border-t mr-0 border-b border-l text-gray-800 border-gray-200 bg-white" 
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+          />
+          <button 
+            className="px-8 rounded-r-lg bg-yellow-400  text-gray-800 font-bold p-4 uppercase border-yellow-500 border-t border-b border-r"
+            disabled={!input}
+            onClick={add}
           >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+            Add
+          </button>
+        </form>
+        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+          Subscription with client fetch
+        </h2>
+        <div className="flex py-5 h-screen md:-mx-4">
+          <div className="w-full my-4">
+            {collpsibleGroupItems.map((item) => (
+              <CollapsibleGroupItem
+                key={item.id}
+                id={item.id}
+                name={item.name}
+                description={item.description}
+              />
+            ))}
+          </div>
         </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
+      </div>
     </div>
   )
+}
+
+export const getStaticProps: GetStaticProps = async () => {
+  const SSR = withSSRContext()
+  const { data } = await SSR.API.graphql({
+    query: listTodos
+  })
+  return {
+    props: {
+      data: data
+    },
+    revalidate: 3,
+  }
 }
