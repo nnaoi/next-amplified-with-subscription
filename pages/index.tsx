@@ -93,7 +93,7 @@ export default function Home({ data }: HomeProps) {
           </button>
         </form>
         <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-          Subscription with client fetch
+          Subscription with ISR
         </h2>
         <div className="flex py-5 h-screen md:-mx-4">
           <div className="w-full my-4">
