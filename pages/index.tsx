@@ -8,8 +8,6 @@ import CollapsibleGroupItem, { CollapsibleGroupItemProps } from "../src/componen
 import { createTodo } from "../src/graphql/mutations";
 import { listTodos } from "../src/graphql/queries";
 import { onCreateTodo } from "../src/graphql/subscriptions";
-import styles from '../styles/Home.module.css'
-
 
 type HomeProps = {
   data: ListTodosQuery;
@@ -71,7 +69,7 @@ export default function Home({ data }: HomeProps) {
   }, [])
 
   return (
-    <div className={styles.container}>
+    <div style={{ fontFamily: 'Roboto' }}>
       <Head>
         <title>Create Next App</title>
         <link rel="icon" href="/favicon.ico" />
