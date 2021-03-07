@@ -70,41 +70,34 @@ export default function Home({ data }: HomeProps) {
 
   return (
     <div style={{ fontFamily: 'Roboto' }}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <div style={{ fontFamily: 'Roboto' }}>
-        <form className="m-4 flex">
-          <input 
-            className="rounded-l-lg p-4 border-t mr-0 border-b border-l text-gray-800 border-gray-200 bg-white" 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-          />
-          <button 
-            className="px-8 rounded-r-lg bg-yellow-400  text-gray-800 font-bold p-4 uppercase border-yellow-500 border-t border-b border-r"
-            disabled={!input}
-            type="button"
-            onClick={add}
-          >
-            Add
-          </button>
-        </form>
-        <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-          Subscription with ISR
-        </h2>
-        <div className="flex py-5 h-screen md:-mx-4">
-          <div className="w-full my-4">
-            {collpsibleGroupItems.map((item) => (
-              <CollapsibleGroupItem
-                key={item.id}
-                id={item.id}
-                name={item.name}
-                description={item.description}
-              />
-            ))}
-          </div>
+      <form className="m-4 flex">
+        <input 
+          className="rounded-l-lg p-4 border-t mr-0 border-b border-l text-gray-800 border-gray-200 bg-white" 
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+        />
+        <button 
+          className="px-8 rounded-r-lg bg-yellow-400  text-gray-800 font-bold p-4 uppercase border-yellow-500 border-t border-b border-r"
+          disabled={!input}
+          type="button"
+          onClick={add}
+        >
+          Add
+        </button>
+      </form>
+      <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+        Subscription with ISR
+      </h2>
+      <div className="flex py-5 h-screen md:-mx-4">
+        <div className="w-full my-4">
+          {collpsibleGroupItems.map((item) => (
+            <CollapsibleGroupItem
+              key={item.id}
+              id={item.id}
+              name={item.name}
+              description={item.description}
+            />
+          ))}
         </div>
       </div>
     </div>
